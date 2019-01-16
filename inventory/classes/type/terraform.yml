@@ -14,7 +14,7 @@ parameters:
           - templates/terraform/main.jsonnet
         input_type: jsonnet
 
-      - output_path: scripts
-        input_type: jinja2
+      - output_path: pillar
         input_paths:
-          - templates/terraform/scripts/
+          - templates/pillar
+        input_type: jinja2

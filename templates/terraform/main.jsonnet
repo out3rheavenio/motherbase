@@ -4,15 +4,11 @@ local inv = kap.inventory();
 local output = import "output.jsonnet";
 local provider = import "provider.jsonnet";
 
-local dns = import "dns.jsonnet";
-local kubernetes = import "kubernetes.jsonnet";
+local network = import "network.jsonnet";
 local compute = import "compute.jsonnet";
 
-
 {
-  "output.tf": output,
   "provider.tf": provider,
+  [if "network" in inv.parameters.resources then "network.tf"]: network,
   [if "deployer" in inv.parameters.resources then "compute.tf"]: compute,
-  [if "container" in inv.parameters.resources then "kubernetes.tf"]: kubernetes,
-  [if "dns" in inv.parameters.resources then "dns.tf"]: dns,
 }

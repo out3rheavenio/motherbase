@@ -1,0 +1,182 @@
+########################################
+# Classes to include in this target
+########################################
+classes:
+  - provider.gcp
+  - type.terraform
+
+########################################
+# override variables defined in any of
+# the classes above
+########################################
+parameters:
+  name: outerheaven1010
+  region: europe-west1
+  domain: devlen.solutions.
+  zone: ${region}-b
+  mstr_zone: europe-west1-b
+  mstr_machine_type: g1-small
+  main_network: ether
+  org: o3h
+
+  dns_default_ttl: 300
+
+  resources:
+    network:
+      init:
+        - name: ${main_network}-${org}
+          auto_create_subnetworks: true
+          routing_mode: GLOBAL
+          description: "This is the main network for the enviroment"
+    firewall:
+      - name: ${main_network}-${org}-icmp
+        network: init
+        allow:
+          protocol: icmp 
+        source_tags:
+          - internal
+        source_ranges:
+          - 86.155.194.0/24
+      - name: ${main_network}-${org}-ssh
+        network: init
+        allow:
+          protocol: tcp 
+          ports:
+            - 22
+        source_ranges:
+          - 86.155.194.0/24
+      - name: ${main_network}-${org}-salt-mstr
+        network: init
+        allow:
+          protocol: tcp 
+          ports:
+            - 4505
+            - 4506
+        source_tags:
+          - minion
+      - name: ${main_network}-${org}-psql
+        network: init
+        allow:
+          protocol: tcp 
+          ports:
+            - 5432
+        source_tags:
+          - app
+      - name: ${main_network}-${org}-mgnt-tcp
+        network: init
+        allow:
+          protocol: tcp
+          ports:
+            - 0-65535 
+        source_tags:
+          - management
+      - name: ${main_network}-${org}-mgnt-udp
+        network: init
+        allow:
+          protocol: tcp
+          ports:
+            - 0-65535 
+        source_tags:
+          - management
+
+    deployer:
+      master:
+        - name: init-mstr-eu
+          machine_type: ${mstr_machine_type}
+          zone: ${mstr_zone}
+          tags:
+            - internal
+            - salt-master
+            - monitoring
+            - management
+          metadata:
+            role: master
+          network_interface:
+            network: \${google_compute_network.init.name}
+            access_config: {}
+          boot_disk:
+            initialize_params:
+              image: ubuntu-os-cloud/ubuntu-1804-lts
+          provisioner:
+            salt-masterless:
+              local_state_tree: ../../../init-sys
+              local_pillar_roots: ../pillar
+              log_level: info
+              connection:
+                    private_key: \${file("~/.ssh/id_rsa")}
+                    user: m3rl1n
+
+      staging:
+        - name: web-staging-eu
+          machine_type: ${mstr_machine_type}
+          zone: ${region}-c
+          tags:
+            - internal
+            - minion
+            - app
+            - staging
+          metadata:
+            role: web
+          network_interface:
+            network: \${google_compute_network.init.name}
+            access_config: {}
+          boot_disk:
+            initialize_params:
+              image: ubuntu-os-cloud/ubuntu-1804-lts
+      production:
+        - name: web-prod-eu
+          machine_type: ${mstr_machine_type}
+          zone: ${region}-b
+          tags:
+            - internal
+            - minion
+            - app
+            - production
+          metadata:
+            role: web
+          network_interface:
+            network: \${google_compute_network.init.name}
+            access_config: {}
+          boot_disk:
+            initialize_params:
+              image: ubuntu-os-cloud/ubuntu-1804-lts
+
+    instance_group:
+      web:
+        - name: web-group-${org}
+          instances:
+            - \${google_compute_instance.staging.self_link}
+            - \${google_compute_instance.production.self_link}
+          health_checks:
+            - \${google_compute_http_health_check.web.name}
+
+    healthchecks:
+      web:
+        - name: web-${org}-checks
+          request_path: "/"
+          check_interval_sec: 1
+          timeout_sec: 1
+
+
+    deployer_dns:
+      master:
+        - type: A
+          ttl: ${dns_default_ttl}
+          managed_zone: devlen-solutions
+          rrdatas: 
+              name: "google_compute_instance"
+              endpoint: "network_interface.0.access_config.0.nat_ip"
+      staging:
+        - type: A
+          ttl: ${dns_default_ttl}
+          managed_zone: devlen-solutions
+          rrdatas: 
+              name: "google_compute_instance"
+              endpoint: "network_interface.0.access_config.0.nat_ip"
+      production:
+        - type: A
+          ttl: ${dns_default_ttl}
+          managed_zone: devlen-solutions
+          rrdatas: 
+              name: "google_compute_instance"
+              endpoint: "network_interface.0.access_config.0.nat_ip"

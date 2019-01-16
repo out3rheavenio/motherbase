@@ -8,8 +8,7 @@ local inv = kap.inventory();
       project: inv.parameters.name,
       version: inv.parameters.provider.google.version,
       region: inv.parameters.region,
-      zone: inv.parameters.zone,
-      credentials: "${file(\"~/.config/gcp-creds.json\")}",
+      credentials: "${file(\"~/.config/gcp-creds-oh.json\")}",
     },
   },
 
@@ -30,10 +29,5 @@ local inv = kap.inventory();
   assert
   std.objectHas(self.provider.google, "version") :
     "Provider version is required",
-
-  assert
-  std.count(inv.parameters.valid_values.zones, self.provider.google.zone) == 1 :
-    "zone " + self.provider.google.zone + " is invalid\n" +
-    "valid zones are: " + inv.parameters.valid_values.zones,
 
 }

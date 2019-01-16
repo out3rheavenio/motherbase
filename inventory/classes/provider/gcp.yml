@@ -11,10 +11,10 @@ parameters:
     required_version: ">= 0.11.7"
     backend:
       gcs:
-        bucket: gcp-backend-tf
-        project: devlopment-192805
+        bucket: oh-state-tf
+        project: outerheaven1010
         prefix: /${name}/
-        credentials: ~/.config/gcp-creds.json
+        credentials: ~/.config/gcp-creds-oh.json
 
 
   # List of allowed values for different resources
@@ -24,6 +24,4 @@ parameters:
     # Updated list below with:
     # gcloud compute zones list
     zones:
-      - europe-west2-a
-      - europe-west2-b
-      - europe-west2-c
+      - europe-west1-b
