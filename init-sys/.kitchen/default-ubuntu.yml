@@ -1,9 +1,0 @@
----
-username: kitchen
-ssh_key: "/home/m3rl1n/Code/motherbase/init-sys/.kitchen/docker_id_rsa"
-image_id: 6d77ea81fbca
-container_id: 5824d66161b836a1edd0d5dd76fec962095f53657d716e5f263472893b7b1fa7
-hostname: localhost
-port: 32835
-last_action: converge
-last_error: 

@@ -16,6 +16,7 @@
     - source: salt://init-sys/nginx.default
     - template: jinja
 
+
 install_salt_master:
   cmd.run:
     - name: curl -o /tmp/bootstrap-salt.sh -L https://bootstrap.saltstack.com && sh /tmp/bootstrap-salt.sh -M -N git v2018.3.2
@@ -27,15 +28,6 @@ install_salt_minion:
     - name: curl -o /tmp/bootstrap-salt.sh -L https://bootstrap.saltstack.com && sh /tmp/bootstrap-salt.sh git v2018.3.2
     - require:
       - file: /etc/salt/master
-
-{% for svc, args in pillar.get('svc',{}).iteritems()%}
-managing_svc_{{ svc }}:
-  service.running:
-    - name: {{ svc}}
-    - enable: True
-    - running: True
-    - reload: True
-{% endfor %}
 
 /etc/pki:
   file.directory:
@@ -140,8 +132,23 @@ base:
     - source: salt://init-sys/master.conf
     - template: jinja
 
+/etc/salt/minion:
+  file.managed:
+    - source: salt://init-sys/minion.conf
+    - template: jinja
+
+
 /etc/salt/master.d:
   file.directory:
     - user: root
     - group: root
     - dir_mode: 755
+
+{% for svc, args in pillar.get('svc',{}).iteritems()%}
+managing_svc_{{ svc }}:
+  service.running:
+    - name: {{ svc}}
+    - enable: True
+    - running: True
+    - reload: True
+{% endfor %}

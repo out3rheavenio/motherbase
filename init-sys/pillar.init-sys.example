@@ -24,6 +24,11 @@ svc:
     watch: /etc/nginx/sites-enabled/default
   grafana-server:
     watch: /etc/nginx/sites-enabled/default
+  salt-master:
+    watch: /etc/salt/master
+  salt-minion:
+    watch: /etc/salt/minion
+
 
 consul:
   acl_datacenter: "vagrant-cloud"

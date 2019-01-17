@@ -24,20 +24,6 @@ local inv = kap.inventory();
       for deployer in std.objectFields(inv.parameters.resources.deployer_dns)
       for set in inv.parameters.resources.deployer_dns[deployer]
     },
-    google_compute_target_pool: {
-     [group]: set {
-
-     }
-     for group in std.objectFields(inv.parameters.resources.instance_group)
-    for set in inv.parameters.resources.instance_group[group]
-    },
-    google_compute_http_health_check: {
-      [check]: set {
-
-    }
-    for check in std.objectFields(inv.parameters.resources.healthchecks)
-    for set in inv.parameters.resources.healthchecks[check]
-    },
   },
 
 
